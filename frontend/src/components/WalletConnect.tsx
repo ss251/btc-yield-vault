@@ -1,96 +1,69 @@
 "use client";
 
-import { useConnect, useDisconnect, useAccount } from "@starknet-react/core";
-import { useState, useEffect } from "react";
+import { useXverseWallet } from "@/providers/XverseProvider";
+import { Wallet, LogOut, Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 export function WalletConnect() {
-  const [mounted, setMounted] = useState(false);
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { address, status } = useAccount();
-  const [showModal, setShowModal] = useState(false);
+  const { connected, connecting, btcAddress, starknetAddress, connect, disconnect } = useXverseWallet();
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const shorten = (addr: string) => `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 
-  const shortenAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  const copyAddress = () => {
+    if (btcAddress) {
+      navigator.clipboard.writeText(btcAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
-  if (!mounted) {
+  if (connected && btcAddress) {
     return (
-      <button className="px-6 py-3 bg-[#F7931A] rounded-xl font-semibold text-black opacity-50">
-        Connect Wallet
-      </button>
-    );
-  }
-
-  if (status === "connected" && address) {
-    return (
-      <button
-        onClick={() => disconnect()}
-        className="group relative px-6 py-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl font-medium text-white hover:border-[#F7931A] transition-all duration-300"
-      >
-        <span className="group-hover:opacity-0 transition-opacity">
-          {shortenAddress(address)}
-        </span>
-        <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[#F7931A]">
-          Disconnect
-        </span>
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={copyAddress}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-dark-surface border border-dark-border rounded-lg text-xs text-gray-400 font-mono hover:border-dark-border-hover transition-colors"
+        >
+          <span className="text-btc">₿</span> {shorten(btcAddress)}
+          {copied ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
+        </button>
+        {starknetAddress && (
+          <span className="hidden md:flex items-center gap-1.5 px-3 py-2 bg-dark-surface border border-dark-border rounded-lg text-xs text-gray-400 font-mono">
+            <span className="text-purple-400">◈</span> {shorten(starknetAddress)}
+          </span>
+        )}
+        <button
+          onClick={disconnect}
+          className="p-2 bg-dark-surface border border-dark-border rounded-lg text-gray-400 hover:text-danger hover:border-danger/30 transition-all"
+          title="Disconnect"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
     );
   }
 
   return (
-    <>
-      <button
-        onClick={() => setShowModal(true)}
-        className="px-6 py-3 bg-[#F7931A] rounded-xl font-semibold text-black hover:bg-[#E8850F] transition-all duration-300 hover:shadow-[0_0_30px_rgba(247,147,26,0.3)]"
-      >
-        Connect Wallet
-      </button>
-
-      {showModal && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50"
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-8 max-w-md w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Connect Wallet
-            </h2>
-            <div className="space-y-3">
-              {connectors.map((connector) => (
-                <button
-                  key={connector.id}
-                  onClick={() => {
-                    connect({ connector });
-                    setShowModal(false);
-                  }}
-                  className="w-full px-6 py-4 bg-[#0D0D0D] border border-[#2A2A2A] rounded-xl font-medium text-white hover:border-[#F7931A] hover:bg-[#1A1A1A] transition-all duration-300 flex items-center gap-4"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-[#2A2A2A] flex items-center justify-center">
-                    <span className="text-[#F7931A] text-lg">
-                      {connector.id[0].toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="capitalize">{connector.id}</span>
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowModal(false)}
-              className="mt-6 w-full px-6 py-3 text-gray-400 hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+    <button
+      onClick={connect}
+      disabled={connecting}
+      className="flex items-center gap-2 px-5 py-2.5 bg-btc rounded-lg font-semibold text-black text-sm hover:bg-btc-hover transition-all hover:shadow-[0_0_30px_rgba(247,147,26,0.3)] disabled:opacity-60"
+    >
+      {connecting ? (
+        <>
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Connecting…
+        </>
+      ) : (
+        <>
+          <Wallet className="w-4 h-4" />
+          Connect Wallet
+        </>
       )}
-    </>
+    </button>
   );
 }

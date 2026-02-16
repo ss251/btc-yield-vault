@@ -1,62 +1,107 @@
-# BTC Yield Vault — RE{DEFINE} Hackathon Plan
+# ZK-Constrained Autonomous Bitcoin Agent
 
-## Concept
-One-click BTC → Starknet yield vault. Connect Xverse wallet, swap BTC to WBTC on Starknet, auto-deposit into yield strategies (Endur LSTs, Vesu lending), compound returns. Clean Bitcoin-native UX.
+## One-Liner
+An AI agent that manages your Bitcoin portfolio, but every decision is ZK-proven correct on Starknet before execution — portfolio stays private, constraints are enforced cryptographically.
 
-## Name Ideas
-- **BTCVault** / **SatoshiVault** / **BitYield** / **StackSats** / **YieldBTC**
+## Why This Wins
+- **AI agents** = hottest crypto narrative (nobody in hackathon has this)
+- **Bitcoin track**: Real BTC transactions via Xverse PSBTs
+- **Privacy track**: Hidden portfolio, private constraints, ZK-proven decisions
+- **Xverse sponsor**: Deep API usage (portfolio, UTXOs, Ordinals, Runes, signing)
+- One codebase → submit to BOTH tracks
 
 ## Architecture
+
 ```
-[Xverse Wallet] → [BTC → WBTC swap via Xverse API] → [Vault Contract (Cairo)]
-                                                            ↓
-                                                   [Strategy: Endur xWBTC staking]
-                                                   [Strategy: Vesu WBTC lending]
-                                                   [Strategy: Ekubo WBTC-USDC LP]
-                                                            ↓
-                                                   [Yield accrual → auto-compound]
-                                                            ↓
-                                                   [Withdraw: vault shares → WBTC → BTC]
+User (Xverse Wallet)
+    │
+    ├── sats-connect → BTC address + Starknet address
+    │
+    └── Xverse API → Real portfolio data
+            │
+            ▼
+    ┌─────────────────┐
+    │   AI Agent       │ (off-chain, LLM-powered)
+    │   - Analyzes BTC │
+    │   - Proposes     │
+    │     actions      │
+    └────────┬────────┘
+             │ action proposal
+             ▼
+    ┌─────────────────┐
+    │  Cairo Contract  │ (on-chain, Starknet)
+    │  - Verify ZK     │
+    │    constraints    │
+    │  - Check limits   │
+    │  - Approve/deny   │
+    └────────┬────────┘
+             │ if approved
+             ▼
+    ┌─────────────────┐
+    │  Execute Action  │
+    │  - Sign PSBT     │
+    │    (via Xverse)  │
+    │  - Starknet tx   │
+    └─────────────────┘
 ```
 
 ## Stack
-- **Smart contracts**: Cairo 2.15 + Scarb + Starknet Foundry
-- **Frontend**: Next.js + starknet.js + Xverse wallet connector
-- **Deployment**: Starknet testnet (Sepolia) → mainnet if time permits
-- **APIs**: Xverse API (swap/bridge), Pragma (price oracle)
+- **Wallet**: sats-connect (Xverse → BTC + Starknet)
+- **Data**: Xverse REST API (portfolio, UTXOs, Ordinals, Runes, market)
+- **AI**: Off-chain LLM reasoning (Claude/GPT via API)
+- **ZK**: Giza/Orion (tiny ONNX model → Cairo verifier) OR custom Cairo constraint checker
+- **Agent**: Starknet Agent Kit (Snak) with AA + session keys
+- **Contract**: Cairo — constraint verification + proof registry + agent state
+- **Bridge**: Atomiq (optional — trustless BTC ↔ wBTC)
+- **Frontend**: Next.js + sats-connect + Tailwind
 
-## Contract Design
-1. **Vault.cairo** — ERC-4626-style vault (deposit WBTC → get vault shares)
-2. **Strategy.cairo** — pluggable yield strategies (Endur staking, Vesu lending)
-3. **Router.cairo** — auto-compound + rebalance across strategies
+## Cairo Contract: AgentVault
+```
+- deploy(owner, constraints)
+- propose_action(action_type, params, proof)
+- verify_constraints(action, proof) → bool
+- execute(action_id) → approved actions only
+- get_agent_state() → current state
+- update_constraints(new_constraints) — owner only
+```
 
-## Key Features
-- [ ] Xverse wallet connect + BTC → WBTC swap flow
-- [ ] Vault deposit/withdraw with share accounting
-- [ ] At least 2 yield strategies (Endur + Vesu)
-- [ ] Auto-compound mechanism
-- [ ] Dashboard showing APY, TVL, user position
-- [ ] Privacy angle: ZK proof of position without revealing amount (bonus)
+### Constraint Types
+- Max spend per day (in sats)
+- Whitelisted action types (swap, bridge, lend)
+- Risk threshold (max drawdown %)
+- Asset allocation limits
+- Time restrictions
 
-## Timeline (12 days: Feb 17–28)
-- **Day 1-2 (Feb 17-18)**: Cairo setup, vault contract skeleton, learn Endur/Vesu interfaces
-- **Day 3-4 (Feb 19-20)**: Vault contract complete, strategy contracts, tests
-- **Day 5-6 (Feb 21-22)**: Frontend scaffold, Xverse wallet integration
-- **Day 7-8 (Feb 23-24)**: Xverse API swap flow, deposit/withdraw UI
-- **Day 9-10 (Feb 25-26)**: Dashboard, auto-compound, testnet deploy
-- **Day 11 (Feb 27)**: Polish, demo video recording
-- **Day 12 (Feb 28)**: Submit on DoraHacks
+## 10-Day Roadmap
+- **Day 1-2**: Agent Kit + sats-connect skeleton, Xverse API integration, fetch real portfolio
+- **Day 3-4**: Cairo constraint contract (deploy, propose, verify, execute), tests
+- **Day 5-6**: AI decision engine (off-chain LLM), action proposal flow
+- **Day 7**: Giza zkML integration (tiny model for risk scoring → Cairo proof)
+- **Day 8**: Frontend — connect wallet, set constraints, monitor agent
+- **Day 9**: Polish, end-to-end demo, deploy to Sepolia
+- **Day 10**: Demo video (3 min), README, submission
 
-## Submission Requirements
-- [x] GitHub repo (public)
-- [ ] Working demo on Starknet testnet/mainnet
-- [ ] 3-minute demo video
-- [ ] Project description (max 500 words)
-- [ ] Starknet wallet address
+## Demo Script
+1. Connect Xverse wallet → show real BTC portfolio
+2. Set agent constraints on Starknet ("max 0.01 BTC/day, only swap if slippage < 2%")
+3. Agent analyzes portfolio using Xverse API
+4. Agent proposes action → Cairo contract verifies constraints
+5. ZK proof generated → action approved
+6. BTC transaction executes via Xverse PSBT signing
+7. Show proof hash on Starknet explorer
+8. "You didn't build an AI wallet. You built a cryptographically bounded autonomous agent."
 
-## Why This Wins
-1. **Xverse sponsor prize** — deep API integration = eligible for $5.5K in-kind
-2. **Real composability** — builds on Endur/Vesu/Ekubo (not reinventing)
-3. **Bitcoin-native UX** — Bitcoiners don't want to learn DeFi, just "deposit BTC, earn yield"
-4. **BTCFi Season alignment** — leverages the 100M STRK incentive program
-5. **Clean, shippable** — vault pattern is proven, reduces risk
+## Xverse API Endpoints Needed
+- Portfolio: GET /v1/address/{address}/balance
+- UTXOs: GET /v1/address/{address}/utxo
+- Ordinals: GET /v1/address/{address}/ordinals
+- Runes: GET /v1/address/{address}/runes
+- Market: GET /v1/swaps/get-quotes
+- Signing: sats-connect signPsbt
+
+## Research Files
+- CRITIQUE-GROK.md, CRITIQUE-GPT.md, CRITIQUE-CLAUDE.md
+- PIVOT-IDEAS.md
+- XVERSE-INTEGRATION.md
+- BTC-DEFI-LANDSCAPE.md
+- STRATEGY.md

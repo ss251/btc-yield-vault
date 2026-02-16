@@ -1,30 +1,20 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { StarknetProvider } from "@/providers/StarknetProvider";
+import { XverseProvider } from "@/providers/XverseProvider";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "SatStack | BTC Yield Vault on Starknet",
-  description: "Earn yield on your Bitcoin with SatStack - the premier BTC yield vault built on Starknet",
-  keywords: ["Bitcoin", "BTC", "Starknet", "DeFi", "Yield", "Vault"],
+  title: "ZK-Constrained Bitcoin Agent",
+  description: "AI manages your BTC. Every decision ZK-proven on Starknet.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased bg-[#0D0D0D] text-white min-h-screen`}>
-        <StarknetProvider>
-          {children}
-        </StarknetProvider>
+      <body className={`${inter.variable} font-sans antialiased bg-dark-bg text-white min-h-screen`}>
+        <XverseProvider>{children}</XverseProvider>
       </body>
     </html>
   );

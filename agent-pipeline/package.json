@@ -1,0 +1,13 @@
+{
+  "name": "agent-pipeline",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx run.ts",
+    "dev": "tsx watch run.ts"
+  },
+  "dependencies": {
+    "starknet": "^9.2.1",
+    "tsx": "^4.19.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "xverse-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Xverse Bitcoin API - BTC balance, UTXOs, Ordinals, Runes, Portfolio",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
