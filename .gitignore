@@ -3,3 +3,8 @@ target
 snfoundry_trace/
 coverage/
 profile/
+node_modules/
+.next/
+.env
+.env.local
+*.log
