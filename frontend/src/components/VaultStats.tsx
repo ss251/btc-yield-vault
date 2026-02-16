@@ -1,6 +1,7 @@
 "use client";
 
 import { useAccount } from "@starknet-react/core";
+import { useEffect, useState } from "react";
 import { MOCK_VAULT_DATA } from "@/lib/constants";
 
 interface StatCardProps {
@@ -25,8 +26,14 @@ function StatCard({ label, value, suffix, highlight }: StatCardProps) {
 }
 
 export function VaultStats() {
+  const [mounted, setMounted] = useState(false);
   const { address, status } = useAccount();
-  const isConnected = status === "connected" && address;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isConnected = mounted && status === "connected" && address;
 
   // TODO: Replace with actual contract reads
   const { tvl, apy, totalDepositors, userPosition, userYieldEarned } =

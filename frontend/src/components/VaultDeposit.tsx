@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount } from "@starknet-react/core";
 
 export function VaultDeposit() {
+  const [mounted, setMounted] = useState(false);
   const { address, status } = useAccount();
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const isConnected = status === "connected" && address;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isConnected = mounted && status === "connected" && address;
 
   const handleDeposit = async () => {
     if (!amount || !isConnected) return;

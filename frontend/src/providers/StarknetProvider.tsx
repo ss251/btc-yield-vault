@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
-import { sepolia } from "@starknet-react/chains";
+import { ReactNode, useEffect, useState } from "react";
+import { sepolia, mainnet } from "@starknet-react/chains";
 import {
   StarknetConfig,
   publicProvider,
@@ -14,7 +14,7 @@ interface StarknetProviderProps {
   children: ReactNode;
 }
 
-export function StarknetProvider({ children }: StarknetProviderProps) {
+function StarknetConfigWrapper({ children }: StarknetProviderProps) {
   const { connectors } = useInjectedConnectors({
     recommended: [argent(), braavos()],
     includeRecommended: "onlyIfNoConnectors",
@@ -23,11 +23,25 @@ export function StarknetProvider({ children }: StarknetProviderProps) {
 
   return (
     <StarknetConfig
-      chains={[sepolia]}
+      chains={[sepolia, mainnet]}
       provider={publicProvider()}
       connectors={connectors}
     >
       {children}
     </StarknetConfig>
   );
+}
+
+export function StarknetProvider({ children }: StarknetProviderProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
+  return <StarknetConfigWrapper>{children}</StarknetConfigWrapper>;
 }

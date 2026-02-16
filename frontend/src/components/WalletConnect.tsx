@@ -1,17 +1,30 @@
 "use client";
 
 import { useConnect, useDisconnect, useAccount } from "@starknet-react/core";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function WalletConnect() {
+  const [mounted, setMounted] = useState(false);
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { address, status } = useAccount();
   const [showModal, setShowModal] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const shortenAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
+
+  if (!mounted) {
+    return (
+      <button className="px-6 py-3 bg-[#F7931A] rounded-xl font-semibold text-black opacity-50">
+        Connect Wallet
+      </button>
+    );
+  }
 
   if (status === "connected" && address) {
     return (

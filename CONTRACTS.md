@@ -20,8 +20,13 @@
 - Periphery: https://github.com/vesuxyz/vesu-periphery
 - Uses ERC-4626 VTokens for deposits
 
+## Vesu V2 (Mainnet)
+- **Pool Factory**: `0x3760f903a37948f97302736f89ce30290e45f441559325026842b7a6fb388c0`
+- **Pool**: `0x451fe483d5921a2919ddd81d0de6696669bccdacd859f72a4fba7656b97c3b5`
+- **Oracle**: `0xfe4bfb1b353ba51eb34dff963017f94af5a5cf8bdf3dfc191c504657f3c05`
+
 ## Key Tokens (Mainnet)
-- **WBTC**: Need to find address
+- **WBTC**: `0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac` (StarkGate-bridged)
 - **STRK**: `0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d`
 - **ETH**: `0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7`
 
