@@ -1,7 +1,7 @@
 import { RpcProvider, Account, CallData, hash, cairo, constants, ec } from "starknet";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const XVERSE_API_KEY = "REDACTED_API_KEY";
+const XVERSE_API_KEY = process.env.XVERSE_API_KEY || "";
 const XVERSE_BASE = "https://api.secretkeylabs.io";
 const BTC_ADDRESS = "bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3";
 

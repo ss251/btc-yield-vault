@@ -13,8 +13,7 @@ export const STARKNET_RPC =
 // Xverse API
 export const XVERSE_API_BASE = "https://api.secretkeylabs.io";
 export const XVERSE_API_KEY =
-  process.env.NEXT_PUBLIC_XVERSE_API_KEY ||
-  "REDACTED_API_KEY";
+  process.env.NEXT_PUBLIC_XVERSE_API_KEY || "";
 
 // UI
 export const BITCOIN_ORANGE = "#F7931A";

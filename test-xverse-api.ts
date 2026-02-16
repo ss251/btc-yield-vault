@@ -5,7 +5,7 @@
  */
 
 const BASE_URL = "https://api.secretkeylabs.io";
-const API_KEY = "REDACTED_API_KEY";
+const API_KEY = process.env.XVERSE_API_KEY || "";
 const TEST_ADDRESS = "bc1q0egjvlcfq77cxd9kvpgppyuxckzvws46e3sxch";
 
 // A known whale address with ordinals/runes for richer testing
