@@ -1,47 +1,55 @@
-use starknet::ContractAddress;
-
 use snforge_std::{declare, ContractClassTrait, DeclareResultTrait};
+use starknet::ContractAddress;
+use btc_yield_vault::vault::{IBTCYieldVaultDispatcher, IBTCYieldVaultDispatcherTrait};
 
-use btc_yield_vault::IHelloStarknetSafeDispatcher;
-use btc_yield_vault::IHelloStarknetSafeDispatcherTrait;
-use btc_yield_vault::IHelloStarknetDispatcher;
-use btc_yield_vault::IHelloStarknetDispatcherTrait;
+fn OWNER() -> ContractAddress {
+    starknet::contract_address_const::<'owner'>()
+}
 
-fn deploy_contract(name: ByteArray) -> ContractAddress {
-    let contract = declare(name).unwrap().contract_class();
-    let (contract_address, _) = contract.deploy(@ArrayTrait::new()).unwrap();
-    contract_address
+fn ASSET() -> ContractAddress {
+    starknet::contract_address_const::<'wbtc'>()
+}
+
+fn STRATEGY() -> ContractAddress {
+    starknet::contract_address_const::<'endur_xwbtc'>()
+}
+
+fn deploy_vault() -> IBTCYieldVaultDispatcher {
+    let contract = declare("BTCYieldVault").unwrap().contract_class();
+    let mut calldata = array![];
+
+    // Constructor args: asset, strategy, owner
+    ASSET().serialize(ref calldata);
+    STRATEGY().serialize(ref calldata);
+    OWNER().serialize(ref calldata);
+
+    let (contract_address, _) = contract.deploy(@calldata).unwrap();
+    IBTCYieldVaultDispatcher { contract_address }
 }
 
 #[test]
-fn test_increase_balance() {
-    let contract_address = deploy_contract("HelloStarknet");
+fn test_deployment() {
+    let vault = deploy_vault();
 
-    let dispatcher = IHelloStarknetDispatcher { contract_address };
-
-    let balance_before = dispatcher.get_balance();
-    assert(balance_before == 0, 'Invalid balance');
-
-    dispatcher.increase_balance(42);
-
-    let balance_after = dispatcher.get_balance();
-    assert(balance_after == 42, 'Invalid balance');
+    assert!(vault.asset() == ASSET(), "Wrong asset");
+    assert!(vault.strategy() == STRATEGY(), "Wrong strategy");
+    assert!(vault.total_shares() == 0, "Should start with 0 shares");
+    assert!(!vault.is_paused(), "Should not be paused");
 }
 
+// Note: convert_to_shares/convert_to_assets tests require mock ERC20/ERC4626
+// contracts deployed. Will add integration tests with mocks in next iteration.
+
 #[test]
-#[feature("safe_dispatcher")]
-fn test_cannot_increase_balance_with_zero_value() {
-    let contract_address = deploy_contract("HelloStarknet");
+fn test_pause_unpause() {
+    let vault = deploy_vault();
 
-    let safe_dispatcher = IHelloStarknetSafeDispatcher { contract_address };
+    // Only owner can pause
+    snforge_std::start_cheat_caller_address(vault.contract_address, OWNER());
+    vault.set_paused(true);
+    assert!(vault.is_paused(), "Should be paused");
 
-    let balance_before = safe_dispatcher.get_balance().unwrap();
-    assert(balance_before == 0, 'Invalid balance');
-
-    match safe_dispatcher.increase_balance(0) {
-        Result::Ok(_) => core::panic_with_felt252('Should have panicked'),
-        Result::Err(panic_data) => {
-            assert(*panic_data.at(0) == 'Amount cannot be 0', *panic_data.at(0));
-        }
-    };
+    vault.set_paused(false);
+    assert!(!vault.is_paused(), "Should be unpaused");
+    snforge_std::stop_cheat_caller_address(vault.contract_address);
 }
